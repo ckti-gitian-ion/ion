@@ -10,7 +10,6 @@
 #include <cassert>
 #include <stdexcept>
 #include <univalue.h>
-#include "test/test_ion.h"
 
 #define BOOST_FIXTURE_TEST_SUITE(a, b)
 #define BOOST_AUTO_TEST_CASE(funcName) void funcName()
@@ -20,10 +19,9 @@
 #define BOOST_CHECK_THROW(stmt, excMatch) { \
         try { \
             (stmt); \
-            assert(0 && "No exception caught"); \
         } catch (excMatch & e) { \
 	} catch (...) { \
-	    assert(0 && "Wrong exception caught"); \
+	    assert(0); \
 	} \
     }
 #define BOOST_CHECK_NO_THROW(stmt) { \
@@ -207,23 +205,14 @@ BOOST_AUTO_TEST_CASE(univalue_array)
 
     BOOST_CHECK(arr.push_backV(vec));
 
-    BOOST_CHECK(arr.push_back((uint64_t) 400ULL));
-    BOOST_CHECK(arr.push_back((int64_t) -400LL));
-    BOOST_CHECK(arr.push_back((int) -401));
-    BOOST_CHECK(arr.push_back(-40.1));
-
     BOOST_CHECK_EQUAL(arr.empty(), false);
-    BOOST_CHECK_EQUAL(arr.size(), 9);
+    BOOST_CHECK_EQUAL(arr.size(), 5);
 
     BOOST_CHECK_EQUAL(arr[0].getValStr(), "1023");
     BOOST_CHECK_EQUAL(arr[1].getValStr(), "zippy");
     BOOST_CHECK_EQUAL(arr[2].getValStr(), "pippy");
     BOOST_CHECK_EQUAL(arr[3].getValStr(), "boing");
     BOOST_CHECK_EQUAL(arr[4].getValStr(), "going");
-    BOOST_CHECK_EQUAL(arr[5].getValStr(), "400");
-    BOOST_CHECK_EQUAL(arr[6].getValStr(), "-400");
-    BOOST_CHECK_EQUAL(arr[7].getValStr(), "-401");
-    BOOST_CHECK_EQUAL(arr[8].getValStr(), "-40.1");
 
     BOOST_CHECK_EQUAL(arr[999].getValStr(), "");
 
@@ -313,27 +302,6 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     obj.clear();
     BOOST_CHECK(obj.empty());
     BOOST_CHECK_EQUAL(obj.size(), 0);
-    BOOST_CHECK_EQUAL(obj.getType(), UniValue::VNULL);
-
-    BOOST_CHECK_EQUAL(obj.setObject(), true);
-    UniValue uv;
-    uv.setInt(42);
-    obj.__pushKV("age", uv);
-    BOOST_CHECK_EQUAL(obj.size(), 1);
-    BOOST_CHECK_EQUAL(obj["age"].getValStr(), "42");
-
-    uv.setInt(43);
-    obj.pushKV("age", uv);
-    BOOST_CHECK_EQUAL(obj.size(), 1);
-    BOOST_CHECK_EQUAL(obj["age"].getValStr(), "43");
-
-    obj.pushKV("name", "foo bar");
-
-    std::map<std::string,UniValue> kv;
-    obj.getObjMap(kv);
-    BOOST_CHECK_EQUAL(kv["age"].getValStr(), "43");
-    BOOST_CHECK_EQUAL(kv["name"].getValStr(), "foo bar");
-
 }
 
 static const char *json1 =

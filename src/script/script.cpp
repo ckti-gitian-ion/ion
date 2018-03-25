@@ -1,11 +1,23 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2015 The Bitcoin Core developers
+// Copyright (c) 2009-2014 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <script/script.h>
-#include <tinyformat.h>
-#include <utilstrencodings.h>
+#include "script.h"
+#include "tinyformat.h"
+#include "utilstrencodings.h"
+
+namespace {
+inline std::string ValueString(const std::vector<unsigned char>& vch)
+{
+    if (vch.size() <= 4)
+        return strprintf("%d", CScriptNum(vch, false).getint());
+    else
+        return HexStr(vch);
+}
+} // anon namespace
+
+using namespace std;
 
 const char* GetOpName(opcodetype opcode)
 {
@@ -126,17 +138,21 @@ const char* GetOpName(opcodetype opcode)
     case OP_CHECKMULTISIG          : return "OP_CHECKMULTISIG";
     case OP_CHECKMULTISIGVERIFY    : return "OP_CHECKMULTISIGVERIFY";
 
-    // expansion
+    // expanson
     case OP_NOP1                   : return "OP_NOP1";
-    case OP_CHECKLOCKTIMEVERIFY    : return "OP_CHECKLOCKTIMEVERIFY";
-    case OP_CHECKSEQUENCEVERIFY    : return "OP_CHECKSEQUENCEVERIFY";
+    case OP_NOP2                   : return "OP_NOP2";
+    case OP_NOP3                   : return "OP_NOP3";
     case OP_NOP4                   : return "OP_NOP4";
     case OP_NOP5                   : return "OP_NOP5";
     case OP_NOP6                   : return "OP_NOP6";
-    case OP_GROUP                  : return "OP_GROUP";
+    case OP_NOP7                   : return "OP_NOP7";
     case OP_NOP8                   : return "OP_NOP8";
     case OP_NOP9                   : return "OP_NOP9";
     case OP_NOP10                  : return "OP_NOP10";
+
+    // zerocoin
+    case OP_ZEROCOINMINT           : return "OP_ZEROCOINMINT";
+    case OP_ZEROCOINSPEND          : return "OP_ZEROCOINSPEND";
 
     case OP_INVALIDOPCODE          : return "OP_INVALIDOPCODE";
 
@@ -167,7 +183,7 @@ unsigned int CScript::GetSigOpCount(bool fAccurate) const
             if (fAccurate && lastOpcode >= OP_1 && lastOpcode <= OP_16)
                 n += DecodeOP_N(lastOpcode);
             else
-                n += MAX_PUBKEYS_PER_MULTISIG;
+                n += 20;
         }
         lastOpcode = opcode;
     }
@@ -183,75 +199,65 @@ unsigned int CScript::GetSigOpCount(const CScript& scriptSig) const
     // get the last item that the scriptSig
     // pushes onto the stack:
     const_iterator pc = scriptSig.begin();
-    std::vector<unsigned char> vData;
+    vector<unsigned char> data;
     while (pc < scriptSig.end())
     {
         opcodetype opcode;
-        if (!scriptSig.GetOp(pc, opcode, vData))
+        if (!scriptSig.GetOp(pc, opcode, data))
             return 0;
         if (opcode > OP_16)
             return 0;
     }
 
     /// ... and return its opcount:
-    CScript subscript(vData.begin(), vData.end());
+    CScript subscript(data.begin(), data.end());
     return subscript.GetSigOpCount(true);
 }
 
-bool CScript::IsPayToPublicKeyHash() const
+bool CScript::IsNormalPaymentScript() const
 {
-    // Extra-fast test for pay-to-pubkey-hash CScripts:
-    return (this->size() == 25 &&
-            (*this)[0] == OP_DUP &&
-            (*this)[1] == OP_HASH160 &&
-            (*this)[2] == 0x14 &&
-            (*this)[23] == OP_EQUALVERIFY &&
-            (*this)[24] == OP_CHECKSIG);
+    if(this->size() != 25) return false;
+
+    std::string str;
+    opcodetype opcode;
+    const_iterator pc = begin();
+    int i = 0;
+    while (pc < end())
+    {
+        GetOp(pc, opcode);
+
+        if(     i == 0 && opcode != OP_DUP) return false;
+        else if(i == 1 && opcode != OP_HASH160) return false;
+        else if(i == 3 && opcode != OP_EQUALVERIFY) return false;
+        else if(i == 4 && opcode != OP_CHECKSIG) return false;
+        else if(i == 5) return false;
+
+        i++;
+    }
+
+    return true;
 }
 
-bool CScript::IsPayToScriptHash(std::vector<unsigned char> *hashBytes) const
+bool CScript::IsPayToScriptHash() const
 {
-    unsigned int offset = 0;
-    if ((*this)[0] > OP_0 && (*this)[0] < OP_PUSHDATA1)
-    {
-        unsigned int len = this->size();
-        offset += (*this)[0] + 1;
-        if ((offset < len) && ((*this)[offset] > OP_0) && ((*this)[offset] < OP_PUSHDATA1))
-        {
-            offset += (*this)[offset] + 1;
-            if ((offset < len) && ((*this)[offset] != OP_GROUP))
-                offset = 0;
-            else
-                offset += 3; // 2 more bytes for OP_GROUP OP_DROP OP_DROP
-        }
-    }
     // Extra-fast test for pay-to-script-hash CScripts:
-    if (this->size() == offset + 23 && (*this)[offset] == OP_HASH160 && (*this)[offset + 1] == 0x14 &&
-        (*this)[offset + 22] == OP_EQUAL)
-    {
-        if (hashBytes)
-        {
-            hashBytes->reserve(20);
-            copy(begin() + offset + 2, begin() + offset + 22, back_inserter(*hashBytes));
-        }
-        return true;
-    }
-    return false;
+    return (this->size() == 23 &&
+            this->at(0) == OP_HASH160 &&
+            this->at(1) == 0x14 &&
+            this->at(22) == OP_EQUAL);
 }
 
-bool CScript::IsPayToPublicKey() const
+bool CScript::IsZerocoinMint() const
 {
-    // Test for pay-to-pubkey CScript with both
-    // compressed or uncompressed pubkey
-    if (this->size() == 35) {
-        return ((*this)[1] == 0x02 || (*this)[1] == 0x03) &&
-                (*this)[34] == OP_CHECKSIG;
-    }
-    if (this->size() == 67) {
-        return (*this)[1] == 0x04 &&
-                (*this)[66] == OP_CHECKSIG;
-    }
-    return false;
+    //fast test for Zerocoin Mint CScripts
+    return (this->size() > 0 &&
+        this->at(0) == OP_ZEROCOINMINT);
+}
+
+bool CScript::IsZerocoinSpend() const
+{
+    return (this->size() > 0 &&
+        this->at(0) == OP_ZEROCOINSPEND);
 }
 
 bool CScript::IsPushOnly(const_iterator pc) const
@@ -276,22 +282,31 @@ bool CScript::IsPushOnly() const
     return this->IsPushOnly(begin());
 }
 
-bool CScript::StartsWithOpcode(const opcodetype opcode) const
+std::string CScript::ToString() const
 {
-    return (!this->empty() && (*this)[0] == opcode);
-}
+    std::string str;
+    opcodetype opcode;
+    std::vector<unsigned char> vch;
+    const_iterator pc = begin();
+    while (pc < end())
+    {
+        if (!str.empty())
+            str += " ";
+        if (!GetOp(pc, opcode, vch))
+        {
+            str += "[error]";
+            return str;
+        }
+        if (0 <= opcode && opcode <= OP_PUSHDATA4) {
+            str += ValueString(vch);
+        } else {
+            str += GetOpName(opcode);
+            if (opcode == OP_ZEROCOINSPEND) {
+                //Zerocoinspend has no further op codes.
+                break;
+            }
+        }
 
-bool CScript::IsZerocoinMint() const
-{
-    return StartsWithOpcode(OP_ZEROCOINMINT);
-}
-
-bool CScript::IsZerocoinSpend() const
-{
-    return StartsWithOpcode(OP_ZEROCOINSPEND);
-}
-
-bool CScript::IsZerocoinPublicSpend() const
-{
-    return StartsWithOpcode(OP_ZEROCOINPUBLICSPEND);
+    }
+    return str;
 }

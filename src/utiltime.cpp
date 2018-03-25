@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2019 The Bitcoin Core developers
+// Copyright (c) 2009-2014 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -7,76 +7,46 @@
 #include "config/ion-config.h"
 #endif
 
-#include <tinyformat.h>
-#include <utiltime.h>
-
-#include <atomic>
+#include "tinyformat.h"
+#include "utiltime.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread.hpp>
 
-#include <chrono>
+using namespace std;
 
-static std::atomic<int64_t> nMockTime(0); //!< For unit testing
+static int64_t nMockTime = 0; //! For unit testing
 
 int64_t GetTime()
 {
-    int64_t mocktime = nMockTime.load(std::memory_order_relaxed);
-    if (mocktime) return mocktime;
+    if (nMockTime) return nMockTime;
 
-    time_t now = time(nullptr);
-    assert(now > 0);
-    return now;
+    return time(NULL);
 }
-
-template <typename T>
-T GetTime()
-{
-    const std::chrono::seconds mocktime{nMockTime.load(std::memory_order_relaxed)};
-
-    return std::chrono::duration_cast<T>(
-        mocktime.count() ?
-            mocktime :
-            std::chrono::microseconds{GetTimeMicros()});
-}
-template std::chrono::seconds GetTime();
-template std::chrono::milliseconds GetTime();
-template std::chrono::microseconds GetTime();
 
 void SetMockTime(int64_t nMockTimeIn)
 {
-    nMockTime.store(nMockTimeIn, std::memory_order_relaxed);
-}
-
-int64_t GetMockTime()
-{
-    return nMockTime.load(std::memory_order_relaxed);
+    nMockTime = nMockTimeIn;
 }
 
 int64_t GetTimeMillis()
 {
-    int64_t now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()).time_since_epoch().count();
-    assert(now > 0);
-    return now;
+    return (boost::posix_time::ptime(boost::posix_time::microsec_clock::universal_time()) -
+            boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1)))
+        .total_milliseconds();
 }
 
 int64_t GetTimeMicros()
 {
-    int64_t now = std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::system_clock::now()).time_since_epoch().count();
-    assert(now > 0);
-    return now;
-}
-
-int64_t GetSystemTimeInSeconds()
-{
-    return GetTimeMicros()/1000000;
+    return (boost::posix_time::ptime(boost::posix_time::microsec_clock::universal_time()) -
+            boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1)))
+        .total_microseconds();
 }
 
 void MilliSleep(int64_t n)
 {
-
 /**
- * Boost's sleep_for was uninterruptible when backed by nanosleep from 1.50
+ * Boost's sleep_for was uninterruptable when backed by nanosleep from 1.50
  * until fixed in 1.52. Use the deprecated sleep method for the broken case.
  * See: https://svn.boost.org/trac/boost/ticket/7238
  */
@@ -92,11 +62,25 @@ void MilliSleep(int64_t n)
 
 std::string DateTimeStrFormat(const char* pszFormat, int64_t nTime)
 {
-    static std::locale classic(std::locale::classic());
     // std::locale takes ownership of the pointer
-    std::locale loc(classic, new boost::posix_time::time_facet(pszFormat));
+    std::locale loc(std::locale::classic(), new boost::posix_time::time_facet(pszFormat));
     std::stringstream ss;
     ss.imbue(loc);
     ss << boost::posix_time::from_time_t(nTime);
     return ss.str();
+}
+
+std::string DurationToDHMS(int64_t nDurationTime)
+{
+    int seconds = nDurationTime % 60;
+    nDurationTime /= 60;
+    int minutes = nDurationTime % 60;
+    nDurationTime /= 60;
+    int hours = nDurationTime % 24;
+    int days = nDurationTime / 24;
+    if (days)
+        return strprintf("%dd %02dh:%02dm:%02ds", days, hours, minutes, seconds);
+    if (hours)
+        return strprintf("%02dh:%02dm:%02ds", hours, minutes, seconds);
+    return strprintf("%02dm:%02ds", minutes, seconds);
 }

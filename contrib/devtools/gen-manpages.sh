@@ -4,23 +4,23 @@ TOPDIR=${TOPDIR:-$(git rev-parse --show-toplevel)}
 SRCDIR=${SRCDIR:-$TOPDIR/src}
 MANDIR=${MANDIR:-$TOPDIR/doc/man}
 
-BITCOIND=${BITCOIND:-$SRCDIR/iond}
-BITCOINCLI=${BITCOINCLI:-$SRCDIR/ion-cli}
-BITCOINTX=${BITCOINTX:-$SRCDIR/ion-tx}
-BITCOINQT=${BITCOINQT:-$SRCDIR/qt/ion-qt}
+IOND=${IOND:-$SRCDIR/iond}
+IONCLI=${IONCLI:-$SRCDIR/ion-cli}
+IONTX=${IONTX:-$SRCDIR/ion-tx}
+IONQT=${IONQT:-$SRCDIR/qt/ion-qt}
 
-[ ! -x $BITCOIND ] && echo "$BITCOIND not found or not executable." && exit 1
+[ ! -x $IOND ] && echo "$IOND not found or not executable." && exit 1
 
 # The autodetected version git tag can screw up manpage output a little bit
-BTCVER=($($BITCOINCLI --version | head -n1 | awk -F'[ -]' '{ print $6, $7 }'))
+BTCVER=($($IONCLI --version | head -n1 | awk -F'[ -]' '{ print $6, $7 }'))
 
 # Create a footer file with copyright content.
-# This gets autodetected fine for dashd if --version-string is not set,
-# but has different outcomes for dash-qt and dash-cli.
+# This gets autodetected fine for iond if --version-string is not set,
+# but has different outcomes for ion-qt and ion-cli.
 echo "[COPYRIGHT]" > footer.h2m
-$BITCOIND --version | sed -n '1!p' >> footer.h2m
+$IOND --version | sed -n '1!p' >> footer.h2m
 
-for cmd in $BITCOIND $BITCOINCLI $BITCOINTX $BITCOINQT; do
+for cmd in $IOND $IONCLI $IONTX $IONQT; do
   cmdname="${cmd##*/}"
   help2man -N --version-string=${BTCVER[0]} --include=footer.h2m -o ${MANDIR}/${cmdname}.1 ${cmd}
   sed -i "s/\\\-${BTCVER[1]}//g" ${MANDIR}/${cmdname}.1

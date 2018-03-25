@@ -8,6 +8,7 @@
 /// \copyright  Copyright 2013 Ian Miers, Christina Garman and Matthew Green
 /// \license    This project is released under the MIT license.
 // Copyright (c) 2017-2018 The PIVX developers
+// Copyright (c) 2018 The Ion Core developers
 
 #ifndef PARAMGENERATION_H_
 #define PARAMGENERATION_H_
@@ -35,20 +36,21 @@ void calculateGroupParamLengths(uint32_t maxPLen, uint32_t securityLevel,
 
 // Prototypes
 bool                primalityTestByTrialDivision(uint32_t candidate);
-arith_uint256       calculateSeed(CBigNum modulus, std::string auxString, uint32_t securityLevel, std::string groupName);
-arith_uint256       calculateGeneratorSeed(arith_uint256 seed, arith_uint256 pSeed, arith_uint256 qSeed, std::string label, uint32_t index, uint32_t count);
+uint256             calculateSeed(CBigNum modulus, std::string auxString, uint32_t securityLevel, std::string groupName);
+uint256             calculateGeneratorSeed(uint256 seed, uint256 pSeed, uint256 qSeed, std::string label, uint32_t index, uint32_t count);
 
-arith_uint256       calculateHash(uint256 input);
-IntegerGroupParams  deriveIntegerGroupParams(arith_uint256 seed, uint32_t pLen, uint32_t qLen);
+uint256             calculateHash(uint256 input);
+IntegerGroupParams  deriveIntegerGroupParams(uint256 seed, uint32_t pLen, uint32_t qLen);
 IntegerGroupParams  deriveIntegerGroupFromOrder(CBigNum &groupOrder);
-void                calculateGroupModulusAndOrder(arith_uint256 seed, uint32_t pLen, uint32_t qLen,
+void                calculateGroupModulusAndOrder(uint256 seed, uint32_t pLen, uint32_t qLen,
         CBigNum *resultModulus, CBigNum *resultGroupOrder,
-        arith_uint256 *resultPseed, arith_uint256 *resultQseed);
-CBigNum              calculateGroupGenerator(arith_uint256 seed, arith_uint256 pSeed, arith_uint256 qSeed, CBigNum modulus,
+        uint256 *resultPseed, uint256 *resultQseed);
+CBigNum              calculateGroupGenerator(uint256 seed, uint256 pSeed, uint256 qSeed, CBigNum modulus,
         CBigNum groupOrder, uint32_t index);
-CBigNum              generateRandomPrime(uint32_t primeBitLen, arith_uint256 in_seed, arith_uint256 *out_seed,
+CBigNum              generateRandomPrime(uint32_t primeBitLen, uint256 in_seed, uint256 *out_seed,
                                         uint32_t *prime_gen_counter);
-CBigNum              generateIntegerFromSeed(uint32_t numBits, arith_uint256 seed, uint32_t *numIterations);
+CBigNum              generateIntegerFromSeed(uint32_t numBits, uint256 seed, uint32_t *numIterations);
+bool                primalityTestByTrialDivision(uint32_t candidate);
 
 }/* namespace libzerocoin */
 

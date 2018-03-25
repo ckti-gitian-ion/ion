@@ -11,9 +11,9 @@ rpcpass = ""
 
 
 if rpcpass == "":
-    access = ServiceProxy("http://127.0.0.1:12705")
+    access = ServiceProxy("http://127.0.0.1:51473")
 else:
-    access = ServiceProxy("http://"+rpcuser+":"+rpcpass+"@127.0.0.1:12705")
+    access = ServiceProxy("http://"+rpcuser+":"+rpcpass+"@127.0.0.1:51473")
 cmd = sys.argv[1].lower()
 
 if cmd == "backupwallet":
@@ -219,31 +219,19 @@ elif cmd == "listtransactions":
     except:
         print "\n---An error occurred---\n"
 
-elif cmd == "listtransactionrecords":
+elif cmd == "move":
     try:
-        acct = raw_input("Account (optional): ")
-        count = raw_input("Number of transactions (optional): ")
-        frm = raw_input("Skip (optional):")
+        frm = raw_input("From: ")
+        to = raw_input("To: ")
+        amt = raw_input("Amount:")
+        mc = raw_input("Minimum confirmations (optional): ")
+        comment = raw_input("Comment (optional): ")
         try:
-            print access.listtransactionrecords(acct, count, frm)
+            print access.move(frm, to, amt, mc, comment)
         except:
-            print access.listtransactionrecords()
+            print access.move(frm, to, amt)
     except:
         print "\n---An error occurred---\n"
-
-#elif cmd == "move":
-#    try:
-#        frm = raw_input("From: ")
-#        to = raw_input("To: ")
-#        amt = raw_input("Amount:")
-#        mc = raw_input("Minimum confirmations (optional): ")
-#        comment = raw_input("Comment (optional): ")
-#        try:
-#            print access.move(frm, to, amt, mc, comment)
-#        except:
-#            print access.move(frm, to, amt)
-#    except:
-#        print "\n---An error occurred---\n"
 
 elif cmd == "sendfrom":
     try:

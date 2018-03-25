@@ -1,10 +1,9 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=Ion Core
-Comment=Ion P2P Cryptocurrency
-Comment[de]=Verbinde mit dem Ion peer-to-peer Netzwerk
-Comment[fr]=Ion, monnaie virtuelle cryptographique pair à pair
-Comment[tr]=Ion, eşten eşe kriptografik sanal para birimi
+Name=ION
+Comment=ION P2P Cryptocurrency
+Comment[fr]=ION, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=ION, eşten eşe kriptografik sanal para birimi
 Exec=ion-qt %u
 Terminal=false
 Type=Application

@@ -1,11 +1,16 @@
 Ion Core
-==========
+=====================
 
-This is the official reference wallet for Ion digital currency and comprises the backbone of the Ion peer-to-peer network. You can [download Ion Core](https://www.ionomy.com/downloads/) or [build it yourself](#building) using the guides below.
+Setup
+---------------------
+Ion Core is the original Ion client and it builds the backbone of the network. It downloads and, by default, stores the entire history of Ion transactions (which is currently more than 100 GBs); depending on the speed of your computer and network connection, the synchronization process can take anywhere from a few hours to a day or more.
+
+
+To download Ion Core, visit [ioncoincore.xyz](https://ioncoincore.xyz/en/releases/).
 
 Running
 ---------------------
-The following are some helpful notes on how to run Ion on your native platform.
+The following are some helpful notes on how to run Bitcoin on your native platform.
 
 ### Unix
 
@@ -20,35 +25,33 @@ Unpack the files into a directory, and then run ion-qt.exe.
 
 ### OS X
 
-Drag Ion-Qt to your applications folder, and then run Ion-Qt.
+Drag Ion-Core to your applications folder, and then run Ion-Core.
 
 ### Need Help?
 
-* See the [Ion documentation](https://docs.ionomy.com)
+* See the documentation at the [Bitcoin Wiki](https://en.bitcoin.it/wiki/Main_Page)
 for help and more information.
-* See the [Ion Developer Documentation](https://ion-docs.github.io/) 
-for technical specifications and implementation details.
-* Ask for help on [Ion Nation Discord](http://ionchat.org)
-* Ask for help on the [Ion Forum](https://ionomy.com/forum)
 
 Building
 ---------------------
-The following are developer notes on how to build Ion Core on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
+The following are developer notes on how to build Bitcoin on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
 
+- [Dependencies](dependencies.md)
 - [OS X Build Notes](build-osx.md)
 - [Unix Build Notes](build-unix.md)
 - [Windows Build Notes](build-windows.md)
 - [OpenBSD Build Notes](build-openbsd.md)
+- [NetBSD Build Notes](build-netbsd.md)
 - [Gitian Building Guide](gitian-building.md)
 
 Development
 ---------------------
-The Ion Core repo's [root README](/README.md) contains relevant information on the development process and automated testing.
+The Ion repo's [root README](/README.md) contains relevant information on the development process and automated testing.
 
 - [Developer Notes](developer-notes.md)
 - [Release Notes](release-notes.md)
 - [Release Process](release-process.md)
-- Source Code Documentation ***TODO***
+- [Source Code Documentation (External Link)](https://dev.visucore.com/bitcoin/doxygen/)
 - [Translation Process](translation_process.md)
 - [Translation Strings Policy](translation_strings_policy.md)
 - [Travis CI](travis-ci.md)
@@ -57,10 +60,6 @@ The Ion Core repo's [root README](/README.md) contains relevant information on t
 - [BIPS](bips.md)
 - [Dnsseed Policy](dnsseed-policy.md)
 - [Benchmarking](benchmarking.md)
-
-### Resources
-* Discuss on the [Ion Forum](https://ionomy.com/forum), in the Development & Technical Discussion board.
-* Discuss on [Ion Nation Discord](http://ionchat.org)
 
 ### Miscellaneous
 - [Assets Attribution](assets-attribution.md)

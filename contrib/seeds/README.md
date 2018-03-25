@@ -3,17 +3,14 @@
 Utility to generate the seeds.txt list that is compiled into the client
 (see [src/chainparamsseeds.h](/src/chainparamsseeds.h) and other utilities in [contrib/seeds](/contrib/seeds)).
 
-The seeds compiled into the release are created from the current protx list, like this:
+Be sure to update `PATTERN_AGENT` in `makeseeds.py` to include the current version,
+and remove old versions as necessary.
 
-The seeds compiled into the release are created from the current masternode list, like this:
+The seeds compiled into the release are created from fuzzbawls' DNS seed data, like this:
 
-    ion-cli masternodelist full > mnlist.json
-    python3 makeseeds.py < mnlist.json > nodes_main.txt
+    curl -s http://main.seederv1.ion.host/ion-mainnet.txt > seeds_main.txt
+    python3 makeseeds.py < seeds_main.txt > nodes_main.txt
     python3 generate-seeds.py . > ../../src/chainparamsseeds.h
-
-Make sure to use a recent block height in the "protx list" call. After updating, create a PR and
-specify which block height you used so that reviewers can re-run the same commands and verify
-that the list is as expected.
 
 ## Dependencies
 

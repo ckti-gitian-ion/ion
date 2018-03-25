@@ -16,26 +16,29 @@
   <key>CFBundlePackageType</key>
   <string>APPL</string>
 
+  <key>CFBundleGetInfoString</key>
+  <string>@CLIENT_VERSION_MAJOR@.@CLIENT_VERSION_MINOR@.@CLIENT_VERSION_REVISION@, Copyright © 2009-@COPYRIGHT_YEAR@ The Bitcoin Core developers, 2014-@COPYRIGHT_YEAR@ The Dash Core developers, 2015-@COPYRIGHT_YEAR@ The PIVX Core developers, @COPYRIGHT_YEAR@ The Ion Core developers</string>
+
   <key>CFBundleShortVersionString</key>
-  <string>@CLIENT_VERSION_MAJOR@.@CLIENT_VERSION_MINOR@.@CLIENT_VERSION_REVISION@.@CLIENT_VERSION_BUILD@</string>
+  <string>@CLIENT_VERSION_MAJOR@.@CLIENT_VERSION_MINOR@.@CLIENT_VERSION_REVISION@</string>
 
   <key>CFBundleVersion</key>
-  <string>@CLIENT_VERSION_MAJOR@.@CLIENT_VERSION_MINOR@.@CLIENT_VERSION_REVISION@.@CLIENT_VERSION_BUILD@</string>
+  <string>@CLIENT_VERSION_MAJOR@.@CLIENT_VERSION_MINOR@.@CLIENT_VERSION_REVISION@</string>
 
   <key>CFBundleSignature</key>
   <string>????</string>
 
   <key>CFBundleExecutable</key>
-  <string>Ion-Qt</string>
-
+  <string>ION-Qt</string>
+  
   <key>CFBundleName</key>
-  <string>Ion-Qt</string>
+  <string>ION-Qt</string>
 
   <key>LSHasLocalizedDisplayName</key>
   <true/>
 
   <key>CFBundleIdentifier</key>
-  <string>org.ion.Ion-Qt</string>
+  <string>io.ion.Ion-Qt</string>
 
   <key>CFBundleURLTypes</key>
   <array>
@@ -43,7 +46,7 @@
       <key>CFBundleTypeRole</key>
       <string>Editor</string>
       <key>CFBundleURLName</key>
-      <string>org.ion.IonPayment</string>
+      <string>io.ion.IONPayment</string>
       <key>CFBundleURLSchemes</key>
       <array>
         <string>ion</string>
@@ -55,9 +58,9 @@
   <array>
     <dict>
       <key>UTTypeIdentifier</key>
-      <string>org.ion.paymentrequest</string>
+      <string>io.ion.paymentrequest</string>
       <key>UTTypeDescription</key>
-      <string>Ion payment request</string>
+      <string>ION payment request</string>
       <key>UTTypeConformsTo</key>
       <array>
         <string>public.data</string>
@@ -81,7 +84,7 @@
       <string>Editor</string>
       <key>LSItemContentTypes</key>
       <array>
-        <string>org.ion.paymentrequest</string>
+        <string>io.ion.paymentrequest</string>
       </array>
       <key>LSHandlerRank</key>
       <string>Owner</string>
@@ -93,12 +96,6 @@
 
   <key>NSHighResolutionCapable</key>
     <string>True</string>
-
-  <key>NSRequiresAquaSystemAppearance</key>
-    <string>True</string>
-
-  <key>NSHumanReadableCopyright</key>
-  <string>Copyright © 2009-@COPYRIGHT_YEAR@ The Bitcoin Core developers, 2014-@COPYRIGHT_YEAR@ The Dash Core developers, 2015-@COPYRIGHT_YEAR@ The PIVX Core developers, 2018-@COPYRIGHT_YEAR@ The Ion Core developers</string>
 
   <key>LSAppNapIsDisabled</key>
     <string>True</string>

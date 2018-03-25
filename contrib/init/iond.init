@@ -23,14 +23,14 @@ prog=iond
 lockfile=${BITCOIND_LOCKFILE-/var/lock/subsys/iond}
 
 # iond defaults to /usr/bin/iond, override with BITCOIND_BIN
-iond=${BITCOIND_BIN-/usr/bin/iond}
+bitcoind=${BITCOIND_BIN-/usr/bin/iond}
 
 # iond opts default to -disablewallet, override with BITCOIND_OPTS
-iond_opts=${BITCOIND_OPTS--disablewallet}
+bitcoind_opts=${BITCOIND_OPTS}
 
 start() {
     echo -n $"Starting $prog: "
-    daemon $DAEMONOPTS $iond $iond_opts
+    daemon $DAEMONOPTS $bitcoind $bitcoind_opts
     RETVAL=$?
     echo
     [ $RETVAL -eq 0 ] && touch $lockfile

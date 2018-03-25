@@ -9,7 +9,8 @@
  * @copyright  Copyright 2013 Ian Miers, Christina Garman and Matthew Green
  * @license    This project is released under the MIT license.
  **/
-// Copyright (c) 2017-2019 The PIVX developers
+// Copyright (c) 2017-2018 The PIVX developers
+// Copyright (c) 2018 The Ion Core developers
 
 #ifndef COMMITMENT_H_
 #define COMMITMENT_H_
@@ -38,7 +39,6 @@ public:
 	 * @param value the value to commit to
 	 */
 	Commitment(const IntegerGroupParams* p, const CBigNum& value);
-    explicit Commitment(const IntegerGroupParams* p, const CBigNum& bnSerial, const CBigNum& bnRandomness);
 	const CBigNum& getCommitmentValue() const;
 	const CBigNum& getRandomness() const;
 	const CBigNum& getContents() const;
@@ -48,8 +48,7 @@ private:
 	CBigNum randomness;
 	const CBigNum contents;
 	ADD_SERIALIZE_METHODS;
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
+  template <typename Stream, typename Operation>  inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
 	    READWRITE(commitmentValue);
 	    READWRITE(randomness);
 	    READWRITE(contents);
@@ -61,7 +60,6 @@ private:
  */
 class CommitmentProofOfKnowledge {
 public:
-    CommitmentProofOfKnowledge(){};
 	CommitmentProofOfKnowledge(const IntegerGroupParams* ap, const IntegerGroupParams* bp);
 	/** Generates a proof that two commitments, a and b, open to the same value.
 	 *
@@ -93,8 +91,7 @@ public:
 	 */
 	bool Verify(const CBigNum& A, const CBigNum& B) const;
 	ADD_SERIALIZE_METHODS;
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
+  template <typename Stream, typename Operation>  inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
 	    READWRITE(S1);
 	    READWRITE(S2);
 	    READWRITE(S3);

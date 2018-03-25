@@ -3,13 +3,17 @@ Description=Ion's distributed currency daemon
 After=network.target
 
 [Service]
-User=ioncoin
-Group=ioncoin
+User=ion
+Group=ion
 
 Type=forking
 PIDFile=/var/lib/iond/iond.pid
+
 ExecStart=/usr/bin/iond -daemon -pid=/var/lib/iond/iond.pid \
--conf=/etc/ioncoin/ioncoin.conf -datadir=/var/lib/iond -disablewallet
+          -conf=/etc/ion/ioncoin.conf -datadir=/var/lib/iond
+
+ExecStop=-/usr/bin/ion-cli -conf=/etc/ion/ioncoin.conf \
+         -datadir=/var/lib/iond stop
 
 Restart=always
 PrivateTmp=true

@@ -1,30 +1,60 @@
-// Copyright (c) 2014-2015 The Bitcoin Core developers
-// Distributed under the MIT software license, see the accompanying
+// Copyright (c) 2014-2018 The Bitcoin Core developers
+// Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
+// Copyright (c) 2018 The Ion Core developers
+// Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <net.h>
+#include "primitives/transaction.h"
+#include "main.h"
 
-#include "test/test_ion.h"
-
-#include <boost/signals2/signal.hpp>
 #include <boost/test/unit_test.hpp>
 
-BOOST_FIXTURE_TEST_SUITE(main_tests, TestingSetup)
+BOOST_AUTO_TEST_SUITE(main_tests)
 
-bool ReturnFalse() { return false; }
-bool ReturnTrue() { return true; }
+CAmount nMoneySupplyPoWEnd = 16629951 * COIN;
 
-BOOST_AUTO_TEST_CASE(test_combiner_all)
+BOOST_AUTO_TEST_CASE(subsidy_limit_test)
 {
-    boost::signals2::signal<bool (), CombinerAll> Test;
-    BOOST_CHECK(Test());
-    Test.connect(&ReturnFalse);
-    BOOST_CHECK(!Test());
-    Test.connect(&ReturnTrue);
-    BOOST_CHECK(!Test());
-    Test.disconnect(&ReturnFalse);
-    BOOST_CHECK(Test());
-    Test.disconnect(&ReturnTrue);
-    BOOST_CHECK(Test());
+    CAmount nSum = 0;
+    for (int nHeight = 0; nHeight < 1; nHeight += 1) {
+        /* premine in block 1 173,360,471 ION) */
+        CAmount nSubsidy = GetBlockValue(nHeight);
+        BOOST_CHECK(nSubsidy <= 0 * COIN);
+        nSum += nSubsidy;
+    }
+
+    for (int nHeight = 1; nHeight < 2; nHeight += 1) {
+        /* PoW Phase One */
+        CAmount nSubsidy = GetBlockValue(nHeight);
+        BOOST_CHECK(nSubsidy <= 1 * COIN);
+        nSum += nSubsidy;
+    }
+
+    for (int nHeight = 2; nHeight < 3; nHeight += 1) {
+        /* PoW Phase One */
+        CAmount nSubsidy = GetBlockValue(nHeight);
+        BOOST_CHECK(nSubsidy <= 16400000 * COIN);
+        nSum += nSubsidy;
+    }
+
+
+    for (int nHeight = 3; nHeight < 455; nHeight += 1) {
+        /* PoW Phase Two */
+        CAmount nSubsidy = GetBlockValue(nHeight);
+        BOOST_CHECK(nSubsidy <= 23 * COIN);
+        nSum += nSubsidy;
+    }
+
+    for (int nHeight = 455; nHeight < 1001; nHeight += 1) {
+        /* PoW Phase Two */
+        CAmount nSubsidy = GetBlockValue(nHeight);
+        BOOST_CHECK(nSubsidy <= 23 * COIN);
+        BOOST_CHECK(MoneyRange(nSubsidy));
+        nSum += nSubsidy;
+        BOOST_CHECK(nSum > 0 && nSum <= nMoneySupplyPoWEnd);
+    }
+    // BOOST_CHECK(nSum == 1662995400000000ULL);
 }
+
 BOOST_AUTO_TEST_SUITE_END()

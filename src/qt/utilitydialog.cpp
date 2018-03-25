@@ -1,27 +1,23 @@
-// Copyright (c) 2011-2015 The Bitcoin Core developers
-// Copyright (c) 2014-2019 The Dash Core developers
-// Distributed under the MIT software license, see the accompanying
+// Copyright (c) 2011-2014 The Bitcoin developers
+// Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2018 The PIVX developers
+// Copyright (c) 2018 The Ion Core developers
+// Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#if defined(HAVE_CONFIG_H)
-#include "config/ion-config.h"
-#endif
+#include "utilitydialog.h"
 
-#include <qt/utilitydialog.h>
+#include "ui_helpmessagedialog.h"
 
-#include <qt/forms/ui_helpmessagedialog.h>
+#include "bitcoingui.h"
+#include "clientmodel.h"
+#include "guiconstants.h"
+#include "intro.h"
+#include "guiutil.h"
 
-#include <qt/bitcoingui.h>
-#include <qt/clientmodel.h>
-#include <qt/guiconstants.h>
-#include <qt/guiutil.h>
-#include <qt/intro.h>
-#include <qt/paymentrequestplus.h>
-#include <qt/guiutil.h>
-
-#include <clientversion.h>
-#include <init.h>
-#include <util.h>
+#include "clientversion.h"
+#include "init.h"
+#include "util.h"
 
 #include <stdio.h>
 
@@ -33,27 +29,24 @@
 #include <QVBoxLayout>
 
 /** "Help message" or "About" dialog box */
-HelpMessageDialog::HelpMessageDialog(QWidget *parent, HelpMode helpMode) :
-    QDialog(parent),
-    ui(new Ui::HelpMessageDialog)
+HelpMessageDialog::HelpMessageDialog(QWidget* parent, bool about) : QDialog(parent),
+                                                                    ui(new Ui::HelpMessageDialog)
 {
     ui->setupUi(this);
+    GUIUtil::restoreWindowGeometry("nHelpMessageDialogWindow", this->size(), this);
 
-    GUIUtil::updateFonts();
-
-    QString version = tr(PACKAGE_NAME) + " " + tr("version") + " " + QString::fromStdString(FormatFullVersion());
-    /* On x86 add a bit specifier to the version so that users can distinguish between
-     * 32 and 64 bit builds. On other architectures, 32/64 bit may be more ambiguous.
+    QString version = tr("Ion Core") + " " + tr("version") + " " + QString::fromStdString(FormatFullVersion());
+/* On x86 add a bit specifier to the version so that users can distinguish between
+     * 32 and 64 bit builds. On other architectures, 32/64 bit may be more ambigious.
      */
 #if defined(__x86_64__)
     version += " " + tr("(%1-bit)").arg(64);
-#elif defined(__i386__ )
+#elif defined(__i386__)
     version += " " + tr("(%1-bit)").arg(32);
 #endif
 
-    if (helpMode == about)
-    {
-        setWindowTitle(tr("About %1").arg(tr(PACKAGE_NAME)));
+    if (about) {
+        setWindowTitle(tr("About Ion Core"));
 
         /// HTML-format the license message from the core
         QString licenseInfo = QString::fromStdString(LicenseInfo());
@@ -62,9 +55,9 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, HelpMode helpMode) :
         // Make URLs clickable
         QRegExp uri("<(.*)>", Qt::CaseSensitive, QRegExp::RegExp2);
         uri.setMinimal(true); // use non-greedy matching
-        licenseInfoHTML.replace(uri, QString("<a style=\"%1\"href=\"\\1\">\\1</a>").arg(GUIUtil::getThemedStyleQString(GUIUtil::ThemedStyle::TS_COMMAND)));
+        licenseInfoHTML.replace(uri, "<a href=\"\\1\">\\1</a>");
         // Replace newlines with HTML breaks
-        licenseInfoHTML.replace("\n", "<br>");
+        licenseInfoHTML.replace("\n\n", "<br><br>");
 
         ui->aboutMessage->setTextFormat(Qt::RichText);
         ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -72,10 +65,10 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, HelpMode helpMode) :
         ui->aboutMessage->setText(version + "<br><br>" + licenseInfoHTML);
         ui->aboutMessage->setWordWrap(true);
         ui->helpMessage->setVisible(false);
-    } else if (helpMode == cmdline) {
+    } else {
         setWindowTitle(tr("Command-line options"));
         QString header = tr("Usage:") + "\n" +
-            "  ion-qt [" + tr("command-line options") + "]                     " + "\n";
+                         "  ion-qt [" + tr("command-line options") + "]                     " + "\n";
         QTextCursor cursor(ui->helpMessage->document());
         cursor.insertText(version);
         cursor.insertBlock();
@@ -83,26 +76,12 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, HelpMode helpMode) :
         cursor.insertBlock();
 
         std::string strUsage = HelpMessage(HMM_BITCOIN_QT);
-        const bool showDebug = gArgs.GetBoolArg("-help-debug", false);
         strUsage += HelpMessageGroup(tr("UI Options:").toStdString());
-        if (showDebug) {
-            strUsage += HelpMessageOpt("-allowselfsignedrootcertificates", strprintf("Allow self signed root certificates (default: %u)", DEFAULT_SELFSIGNED_ROOTCERTS));
-        }
         strUsage += HelpMessageOpt("-choosedatadir", strprintf(tr("Choose data directory on startup (default: %u)").toStdString(), DEFAULT_CHOOSE_DATADIR));
-        strUsage += HelpMessageOpt("-custom-css-dir", "Set a directory which contains custom css files. Those will be used as stylesheets for the UI.");
-        strUsage += HelpMessageOpt("-font-family", tr("Set the font family. Possible values: %1. (default: %2)").arg("SystemDefault, Montserrat").arg(GUIUtil::fontFamilyToString(GUIUtil::getFontFamilyDefault())).toStdString());
-        strUsage += HelpMessageOpt("-font-scale", tr("Set a scale factor which gets applied to the base font size. Possible range %1 (smallest fonts) to %2 (largest fonts). (default: %3)").arg(-100).arg(100).arg(GUIUtil::getFontScaleDefault()).toStdString());
-        strUsage += HelpMessageOpt("-font-weight-bold", tr("Set the font weight for bold texts. Possible range %1 to %2 (default: %3)").arg(0).arg(8).arg(GUIUtil::weightToArg(GUIUtil::getFontWeightBoldDefault())).toStdString());
-        strUsage += HelpMessageOpt("-font-weight-normal", tr("Set the font weight for normal texts. Possible range %1 to %2 (default: %3)").arg(0).arg(8).arg(GUIUtil::weightToArg(GUIUtil::getFontWeightNormalDefault())).toStdString());
         strUsage += HelpMessageOpt("-lang=<lang>", tr("Set language, for example \"de_DE\" (default: system locale)").toStdString());
         strUsage += HelpMessageOpt("-min", tr("Start minimized").toStdString());
         strUsage += HelpMessageOpt("-rootcertificates=<file>", tr("Set SSL root certificates for payment request (default: -system-)").toStdString());
         strUsage += HelpMessageOpt("-splash", strprintf(tr("Show splash screen on startup (default: %u)").toStdString(), DEFAULT_SPLASHSCREEN));
-        strUsage += HelpMessageOpt("-resetguisettings", tr("Reset all settings changed in the GUI").toStdString());
-        if (showDebug) {
-            strUsage += HelpMessageOpt("-uiplatform", strprintf("Select platform to customize UI for (one of windows, macosx, other; default: %s)", BitcoinGUI::DEFAULT_UIPLATFORM));
-            strUsage += HelpMessageOpt("-debug-ui", "Updates the UI's stylesheets in realtime with changes made to the css files in -custom-css-dir and forces some widgets to show up which are usually only visible under certain circumstances. (default: 0)");
-        }
         QString coreOptions = QString::fromStdString(strUsage);
         text = version + "\n" + header + "\n" + coreOptions;
 
@@ -117,7 +96,7 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, HelpMode helpMode) :
         QTextCharFormat bold;
         bold.setFontWeight(QFont::Bold);
 
-        for (const QString &line : coreOptions.split("\n")) {
+        Q_FOREACH (const QString &line, coreOptions.split("\n")) {
             if (line.startsWith("  -"))
             {
                 cursor.currentTable()->appendRows(1);
@@ -139,45 +118,12 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, HelpMode helpMode) :
 
         ui->helpMessage->moveCursor(QTextCursor::Start);
         ui->scrollArea->setVisible(false);
-    } else if (helpMode == pshelp) {
-        setWindowTitle(tr("PrivateSend information"));
-
-        ui->aboutMessage->setTextFormat(Qt::RichText);
-        ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-        ui->aboutMessage->setText(tr("\
-<h3>PrivateSend Basics</h3> \
-PrivateSend gives you true financial privacy by obscuring the origins of your funds. \
-All the Ion in your wallet is comprised of different \"inputs\" which you can think of as separate, discrete coins.<br> \
-PrivateSend uses an innovative process to mix your inputs with the inputs of two other people, without having your coins ever leave your wallet. \
-You retain control of your money at all times.<hr> \
-<b>The PrivateSend process works like this:</b>\
-<ol type=\"1\"> \
-<li>PrivateSend begins by breaking your transaction inputs down into standard denominations. \
-These denominations are 0.001 ION, 0.01 ION, 0.1 ION, 1 ION and 10 ION -- sort of like the paper money you use every day.</li> \
-<li>Your wallet then sends requests to specially configured software nodes on the network, called \"masternodes.\" \
-These masternodes are informed then that you are interested in mixing a certain denomination. \
-No identifiable information is sent to the masternodes, so they never know \"who\" you are.</li> \
-<li>When two or more other people send similar messages, indicating that they wish to mix the same denomination, a mixing session begins. \
-The masternode mixes up the inputs and instructs all three users' wallets to pay the now-transformed input back to themselves. \
-Your wallet pays that denomination directly to itself, but in a different address (called a change address).</li> \
-<li>In order to fully obscure your funds, your wallet must repeat this process a number of times with each denomination. \
-Each time the process is completed, it's called a \"round.\" Each round of PrivateSend makes it exponentially more difficult to determine where your funds originated.</li> \
-<li>This mixing process happens in the background without any intervention on your part. When you wish to make a transaction, \
-your funds will already be mixed. No additional waiting is required.</li> \
-</ol> <hr>\
-<b>IMPORTANT:</b> Your wallet only contains 1000 of these \"change addresses.\" Every time a mixing event happens, up to 9 of your addresses are used up. \
-This means those 1000 addresses last for about 100 mixing events. When 900 of them are used, your wallet must create more addresses. \
-It can only do this, however, if you have automatic backups enabled.<br> \
-Consequently, users who have backups disabled will also have PrivateSend disabled. <hr>\
-For more information, see the <a href=\"https://docs.ionomy.com/en/stable/wallets/ioncore/privatesend-instantsend.html\">PrivateSend documentation</a>."
-        ));
-        ui->aboutMessage->setWordWrap(true);
-        ui->helpMessage->setVisible(false);
     }
 }
 
 HelpMessageDialog::~HelpMessageDialog()
 {
+    GUIUtil::saveWindowGeometry("nHelpMessageDialogWindow", this);
     delete ui;
 }
 
@@ -205,39 +151,34 @@ void HelpMessageDialog::on_okButton_accepted()
 
 
 /** "Shutdown" window */
-ShutdownWindow::ShutdownWindow(QWidget *parent, Qt::WindowFlags f):
-    QWidget(parent, f)
+ShutdownWindow::ShutdownWindow(QWidget* parent, Qt::WindowFlags f) : QWidget(parent, f)
 {
-    setObjectName("ShutdownWindow");
-
-    GUIUtil::loadStyleSheet(this);
-
-    QVBoxLayout *layout = new QVBoxLayout();
+    QVBoxLayout* layout = new QVBoxLayout();
     layout->addWidget(new QLabel(
-        tr("%1 is shutting down...").arg(tr(PACKAGE_NAME)) + "<br /><br />" +
+        tr("Ion Core is shutting down...") + "<br /><br />" +
         tr("Do not shut down the computer until this window disappears.")));
     setLayout(layout);
-
-    GUIUtil::updateFonts();
 }
 
-QWidget *ShutdownWindow::showShutdownWindow(BitcoinGUI *window)
+void ShutdownWindow::showShutdownWindow(BitcoinGUI* window)
 {
     if (!window)
-        return nullptr;
+        return;
 
     // Show a simple window indicating shutdown status
-    QWidget *shutdownWindow = new ShutdownWindow();
+    QWidget* shutdownWindow = new ShutdownWindow();
+    // We don't hold a direct pointer to the shutdown window after creation, so use
+    // Qt::WA_DeleteOnClose to make sure that the window will be deleted eventually.
+    shutdownWindow->setAttribute(Qt::WA_DeleteOnClose);
     shutdownWindow->setWindowTitle(window->windowTitle());
 
     // Center shutdown window at where main window was
     const QPoint global = window->mapToGlobal(window->rect().center());
     shutdownWindow->move(global.x() - shutdownWindow->width() / 2, global.y() - shutdownWindow->height() / 2);
     shutdownWindow->show();
-    return shutdownWindow;
 }
 
-void ShutdownWindow::closeEvent(QCloseEvent *event)
+void ShutdownWindow::closeEvent(QCloseEvent* event)
 {
     event->ignore();
 }

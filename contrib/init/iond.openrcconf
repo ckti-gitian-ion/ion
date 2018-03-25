@@ -1,7 +1,7 @@
 # /etc/conf.d/iond: config file for /etc/init.d/iond
 
 # Config file location
-#BITCOIND_CONFIGFILE="/etc/ioncoin/ioncoin.conf"
+#BITCOIND_CONFIGFILE="/etc/ion/ioncoin.conf"
 
 # What directory to write pidfile to?  (created and owned by $BITCOIND_USER)
 #BITCOIND_PIDDIR="/var/run/iond"
@@ -13,8 +13,8 @@
 #BITCOIND_DATADIR="/var/lib/iond"
 
 # User and group to own iond process
-#BITCOIND_USER="ioncoin"
-#BITCOIND_GROUP="ioncoin"
+#BITCOIND_USER="ion"
+#BITCOIND_GROUP="ion"
 
 # Path to iond executable
 #BITCOIND_BIN="/usr/bin/iond"
@@ -23,11 +23,4 @@
 #BITCOIND_NICE=0
 
 # Additional options (avoid -conf and -datadir, use flags above)
-#BITCOIND_OPTS=""
-
-# The timeout in seconds OpenRC will wait for dashd to terminate
-# after a SIGTERM has been raised.
-# Note that this will be mapped as argument to start-stop-daemon's
-# '--retry' option, which means you can specify a retry schedule
-# here. For more information see man 8 start-stop-daemon.
-BITCOIND_SIGTERM_TIMEOUT=60
+BITCOIND_OPTS=""
