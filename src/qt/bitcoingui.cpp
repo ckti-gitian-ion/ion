@@ -470,6 +470,9 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
     showHelpMessageAction->setMenuRole(QAction::NoRole);
     showHelpMessageAction->setStatusTip(tr("Show the Ion Core help message to get a list with possible ION command-line options"));
 
+    connect(proposalAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(proposalAction, SIGNAL(triggered()), this, SLOT(gotoProposalPage()));
+
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
     connect(aboutAction, SIGNAL(triggered()), this, SLOT(aboutClicked()));
     connect(aboutQtAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
