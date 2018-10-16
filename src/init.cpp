@@ -1430,12 +1430,6 @@ bool AppInit2()
                 pcoinscatcher = new CCoinsViewErrorCatcher(pcoinsdbview);
                 pcoinsTip = new CCoinsViewCache(pcoinscatcher);
 
-                bool fIsActiveCLTV;
-                if (!pblocktree->ReadFlag("CLTVHasMajority", fIsActiveCLTV))
-                    fCLTVHasMajority = false;
-                else
-                    fCLTVHasMajority = fIsActiveCLTV;
-
                 if (fReindex)
                     pblocktree->WriteReindexing(true);
 
