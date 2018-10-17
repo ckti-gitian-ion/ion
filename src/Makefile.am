@@ -73,7 +73,7 @@ if BUILD_BITCOIN_UTILS
   bin_PROGRAMS += ion-cli ion-tx
 endif
 
-.PHONY: FORCE
+.PHONY: FORCE check-symbols check-security
 # ion core #
 BITCOIN_CORE_H = \
   activemasternode.h \
@@ -530,7 +530,6 @@ CLEANFILES += zmq/*.gcda zmq/*.gcno
 CLEANFILES += obj/build.h
 
 EXTRA_DIST =
-
 
 
 config/ion-config.h: config/stamp-h1
