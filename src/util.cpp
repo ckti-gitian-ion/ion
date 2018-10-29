@@ -425,12 +425,12 @@ boost::filesystem::path GetDefaultDataDir()
 {
     namespace fs = boost::filesystem;
 // Windows < Vista: C:\Documents and Settings\Username\Application Data\ION
-// Windows >= Vista: C:\Users\Username\AppData\Roaming\ION
+// Windows >= Vista: C:\Users\Username\AppData\Roaming\ioncoin
 // Mac: ~/Library/Application Support/ioncoin
 // Unix: ~/.ion
 #ifdef WIN32
     // Windows
-    return GetSpecialFolderPath(CSIDL_APPDATA) / "ION";
+    return GetSpecialFolderPath(CSIDL_APPDATA) / "ioncoin";
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -442,10 +442,10 @@ boost::filesystem::path GetDefaultDataDir()
     // Mac
     pathRet /= "Library/Application Support";
     TryCreateDirectory(pathRet);
-    return pathRet / "ION";
+    return pathRet / "Ioncoin";
 #else
     // Unix
-    return pathRet / ".ion";
+    return pathRet / ".ioncoin";
 #endif
 #endif
 }
