@@ -1699,6 +1699,8 @@ bool AppInit2()
         //Inititalize xIONWallet
         uiInterface.InitMessage(_("Syncing xION wallet..."));
 
+        pwalletMain->InitAutoConvertAddresses();
+
         bool fEnableXIonBackups = GetBoolArg("-backupxion", true);
         pwalletMain->setXIonAutoBackups(fEnableXIonBackups);
 
