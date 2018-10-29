@@ -8,7 +8,9 @@ and remove old versions as necessary.
 
 The seeds compiled into the release are created from chainz (cryptoid)' DNS seed data, like this:
 
-    chmod +x ./contrib/seedds/makeseeds.sh && ./contrib/seedds/makeseeds.sh
+    curl -s http://seeder.fuzzbawls.pw/ion-mainnet.txt > seeds_main.txt
+    python3 makeseeds.py < seeds_main.txt > nodes_main.txt
+    python3 generate-seeds.py . > ../../src/chainparamsseeds.h
 
 ## Dependencies
 

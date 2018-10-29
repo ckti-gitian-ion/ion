@@ -1,23 +1,9 @@
-# UNIX BUILD NOTES
+UNIX BUILD NOTES
+====================
 Some notes on how to build ION in Unix.
 
-Table of Contents
-------------------
-- [UNIX BUILD NOTES](#unix-build-notes)
-    - [Note](#note)
-    - [To Build](#to-build)
-    - [Dependencies](#dependencies)
-    - [System requirements](#system-requirements)
-    - [Dependency Build Instructions: Ubuntu & Debian](#dependency-build-instructions-ubuntu--debian)
-        - [Build requirements](#build-requirements)
-    - [Dependencies for the GUI: Ubuntu & Debian](#dependencies-for-the-gui-ubuntu--debian)
-    - [Notes](#notes)
-    - [miniupnpc](#miniupnpc)
-    - [Berkeley DB](#berkeley-db)
-    - [Boost](#boost)
-    - [Security](#security)
-
-## Note
+Note
+---------------------
 Always use absolute paths to configure and compile ion and the dependencies,
 for example, when specifying the path of the dependency:
 
@@ -157,7 +143,8 @@ If you need to build Boost yourself:
 	./bjam install
 
 
-## Security
+Security
+--------
 To help make your ION installation more secure by making certain attacks impossible to
 exploit even if a vulnerability is found, binaries are hardened by default.
 This can be disabled with:

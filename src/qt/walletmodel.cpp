@@ -811,3 +811,8 @@ bool WalletModel::isUsed(CTxDestination dest)
 {
     return wallet->IsUsed(dest);
 }
+
+bool WalletModel::isUsed(CBitcoinAddress address)
+{
+    return wallet->IsUsed(address);
+}
