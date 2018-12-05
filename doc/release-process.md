@@ -16,7 +16,7 @@ Table of Contents
 
 Before every release candidate:
 
-- Update translations (ask for more info on discord or support) see [translation_process.md](https://github.com/ioncoincore/ion/blob/master/doc/translation_process.md#synchronising-translations).
+- Update translations (ask for more info on discord or support) see [translation_process.md](https://github.com/cevap/ion/blob/master/doc/translation_process.md#synchronising-translations).
 
 Before every minor and major release:
 
@@ -87,7 +87,7 @@ Ensure gitian-builder is up-to-date:
     pushd ./gitian-builder
     mkdir -p inputs
     wget -P inputs https://github.com/cevap/osslsigncode/releases/download/v1.7.1/osslsigncode-Backports-to-1.7.1.patch
-    wget -P inputs https://github.com/cevap/osslsigncode/archive/v1.7.1.tar.gz
+    wget -P inputs https://github.com/cevap/osslsigncode/archive/v1.7.1.tar.gz && mv inputs/v1.7.1.tar.gz inputs/osslsigncode-1.7.1.tar.gz
     wget -P inputs https://github.com/cevap/MacOSX-SDKs/releases/download/MacOSX10.11.sdk-trusty/MacOSX10.11.sdk.tar.gz
     popd
 
