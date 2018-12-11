@@ -133,5 +133,8 @@ libbitcoinconsensus.pc
 CMakeLists.txt
 cmake-build-debug
 
+# exclude 5.hfs file created by the script
+5.hfs
+
 #Vscode
 .vscode/
