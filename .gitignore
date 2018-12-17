@@ -146,3 +146,6 @@ parts/
 prime/
 snap/.snapcraft/
 stage/
+
+# datadir
+datadir/
