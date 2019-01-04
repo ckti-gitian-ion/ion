@@ -16,7 +16,7 @@ Table of Contents
 
 Before every release candidate:
 
-- Update translations (ask for more info on discord or support) see [translation_process.md](https://github.com/cevap/ion/blob/master/doc/translation_process.md#synchronising-translations).
+- Update translations (ask for more info on discord or support) see [translation_process.md](https://github.com/ioncoincore/ion/blob/master/doc/translation_process.md#synchronising-translations).
 
 Before every minor and major release:
 
