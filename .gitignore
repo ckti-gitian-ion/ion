@@ -148,6 +148,5 @@ prime/
 snap/.snapcraft/
 stage/
 *.snap
-
 # datadir
 datadir/
