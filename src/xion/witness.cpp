@@ -103,3 +103,4 @@ CoinWitnessCacheData::CoinWitnessCacheData(CoinWitnessData* coinWitnessData)
     accumulatorAmount = coinWitnessData->pAccumulator->getValue();
     accumulatorDenom = coinWitnessData->pAccumulator->getDenomination();
 }
+
