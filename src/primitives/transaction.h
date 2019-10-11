@@ -212,6 +212,9 @@ public:
     // actually immutable; deserialization and assignment are implemented,
     // and bypass the constness. This is safe, as they update the entire
     // structure, including the hash.
+    const int16_t nVersion;
+    const int16_t nType;
+    const uint32_t nTime;
     const std::vector<CTxIn> vin;
     const std::vector<CTxOut> vout;
     const int16_t nVersion;
@@ -237,6 +240,7 @@ public:
     inline void Serialize(Stream& s) const {
         int32_t n32bitVersion = this->nVersion | (this->nType << 16);
         s << n32bitVersion;
+        s << nTime;
         s << vin;
         s << vout;
         s << nLockTime;
@@ -290,6 +294,9 @@ public:
 /** A mutable version of CTransaction. */
 struct CMutableTransaction
 {
+    int16_t nVersion;
+    int16_t nType;
+    uint32_t nTime;
     std::vector<CTxIn> vin;
     std::vector<CTxOut> vout;
     int16_t nVersion;
@@ -310,6 +317,7 @@ struct CMutableTransaction
             this->nVersion = (int16_t) (n32bitVersion & 0xffff);
             this->nType = (int16_t) ((n32bitVersion >> 16) & 0xffff);
         }
+        READWRITE(nTime);
         READWRITE(vin);
         READWRITE(vout);
         READWRITE(nLockTime);
