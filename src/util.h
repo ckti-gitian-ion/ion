@@ -144,8 +144,9 @@ namespace BCLog {
         NETCONN     = ((uint64_t)1 << 43),
         //End Dash
 
-        NET_NETCONN = NET | NETCONN, // use this to have something logged in NET and NETCONN as well
-
+        //Start ION
+        STAKING     = ((uint64_t)1 << 62),
+        //End ION
         ALL         = ~(uint64_t)0,
     };
 }
