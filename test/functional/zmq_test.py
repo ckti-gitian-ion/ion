@@ -2,7 +2,7 @@
 # Copyright (c) 2015-2016 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
-"""Test the ZMQ notification interface."""
+"""Test the ZMQ API."""
 import configparser
 import os
 import struct
@@ -19,25 +19,6 @@ from test_framework.util import (assert_equal,
 def ionhash_helper(b):
     return encode(ionhash(b)[::-1], 'hex_codec').decode('ascii')
 
-class ZMQSubscriber:
-    def __init__(self, socket, topic):
-        self.sequence = 0
-        self.socket = socket
-        self.topic = topic
-
-        import zmq
-        self.socket.setsockopt(zmq.SUBSCRIBE, self.topic)
-
-    def receive(self):
-        topic, body, seq = self.socket.recv_multipart()
-        # Topic should match the subscriber topic.
-        assert_equal(topic, self.topic)
-        # Sequence should be incremental.
-        assert_equal(struct.unpack('<I', seq)[-1], self.sequence)
-        self.sequence += 1
-        return body
-
-
 class ZMQTest (BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 2
@@ -52,30 +33,23 @@ class ZMQTest (BitcoinTestFramework):
         # Check that ion has been built with ZMQ enabled
         config = configparser.ConfigParser()
         if not self.options.configfile:
-            self.options.configfile = os.path.abspath(os.path.join(os.path.dirname(__file__), "../config.ini"))
+            self.options.configfile = os.path.dirname(__file__) + "/../config.ini"
         config.read_file(open(self.options.configfile))
 
         if not config["components"].getboolean("ENABLE_ZMQ"):
             raise SkipTest("iond has not been built with zmq enabled.")
 
-        # Initialize ZMQ context and socket.
-        # All messages are received in the same socket which means
-        # that this test fails if the publishing order changes.
-        # Note that the publishing order is not defined in the documentation and
-        # is subject to change.
-        address = "tcp://127.0.0.1:28332"
-        self.zmq_context = zmq.Context()
-        socket = self.zmq_context.socket(zmq.SUB)
-        socket.set(zmq.RCVTIMEO, 60000)
-        socket.connect(address)
-
-        # Subscribe to all available topics.
-        self.hashblock = ZMQSubscriber(socket, b"hashblock")
-        self.hashtx = ZMQSubscriber(socket, b"hashtx")
-        self.rawblock = ZMQSubscriber(socket, b"rawblock")
-        self.rawtx = ZMQSubscriber(socket, b"rawtx")
-
-        self.extra_args = [["-zmqpub%s=%s" % (sub.topic.decode(), address) for sub in [self.hashblock, self.hashtx, self.rawblock, self.rawtx]], []]
+        self.zmqContext = zmq.Context()
+        self.zmqSubSocket = self.zmqContext.socket(zmq.SUB)
+        self.zmqSubSocket.set(zmq.RCVTIMEO, 60000)
+        self.zmqSubSocket.setsockopt(zmq.SUBSCRIBE, b"hashblock")
+        self.zmqSubSocket.setsockopt(zmq.SUBSCRIBE, b"hashtx")
+        self.zmqSubSocket.setsockopt(zmq.SUBSCRIBE, b"rawblock")
+        self.zmqSubSocket.setsockopt(zmq.SUBSCRIBE, b"rawtx")
+        ip_address = "tcp://127.0.0.1:28332"
+        self.zmqSubSocket.connect(ip_address)
+        self.extra_args = [['-zmqpubhashblock=%s' % ip_address, '-zmqpubhashtx=%s' % ip_address,
+                       '-zmqpubrawblock=%s' % ip_address, '-zmqpubrawtx=%s' % ip_address], []]
         self.add_nodes(self.num_nodes, self.extra_args)
         self.start_nodes()
 
@@ -83,14 +57,12 @@ class ZMQTest (BitcoinTestFramework):
         try:
             self._zmq_test()
         finally:
-            # Destroy the ZMQ context.
-            self.log.debug("Destroying ZMQ context")
-            self.zmq_context.destroy(linger=None)
+            # Destroy the zmq context
+            self.log.debug("Destroying zmq context")
+            self.zmqContext.destroy(linger=None)
 
     def _zmq_test(self):
-        num_blocks = 5
-        self.log.info("Generate %(n)d blocks (and %(n)d coinbase txes)" % {"n": num_blocks})
-        genhashes = self.nodes[0].generate(num_blocks)
+        genhashes = self.nodes[0].generate(1)
         self.sync_all()
 
         self.log.info("Wait for tx")
@@ -160,16 +132,28 @@ class ZMQTest (BitcoinTestFramework):
             assert_equal(genhashes[x], zmqRawHashed[x])
 
         self.log.info("Wait for tx from second node")
-        payment_txid = self.nodes[1].sendtoaddress(self.nodes[0].getnewaddress(), 1.0)
+        # test tx from a second node
+        hashRPC = self.nodes[1].sendtoaddress(self.nodes[0].getnewaddress(), 1.0)
         self.sync_all()
 
-        # Should receive the broadcasted txid.
-        txid = self.hashtx.receive()
-        assert_equal(payment_txid, bytes_to_hex_str(txid))
+        # now we should receive a zmq msg because the tx was broadcast
+        msg = self.zmqSubSocket.recv_multipart()
+        topic = msg[0]
+        assert_equal(topic, b"hashtx")
+        body = msg[1]
+        hashZMQ = bytes_to_hex_str(body)
+        msgSequence = struct.unpack('<I', msg[-1])[-1]
+        assert_equal(msgSequence, blockcount + 1)
 
-        # Should receive the broadcasted raw transaction.
-        hex = self.rawtx.receive()
-        assert_equal(payment_txid, bytes_to_hex_str(hash256(hex)))
+        msg = self.zmqSubSocket.recv_multipart()
+        topic = msg[0]
+        assert_equal(topic, b"rawtx")
+        body = msg[1]
+        hashedZMQ = bytes_to_hex_str(hash256(body))
+        msgSequence = struct.unpack('<I', msg[-1])[-1]
+        assert_equal(msgSequence, blockcount+1)
+        assert_equal(hashRPC, hashZMQ)  # txid from sendtoaddress must be equal to the hash received over zmq
+        assert_equal(hashRPC, hashedZMQ)
 
 if __name__ == '__main__':
     ZMQTest().main()
