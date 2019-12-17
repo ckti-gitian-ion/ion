@@ -39,15 +39,14 @@ Benchmark:
 
     $ gcc -O3 ctaes.c bench.c -o bench
 
-Review
-------
+- [Build, compile and install documentation](../../tree/master/doc#building)
 
 
 ## Ion sources:
 
 We forked from [PIVX](https://github.com/PIVX-Project/PIVX) and integrated ION's specific features into the PivX codebase.
 
-By doing so, we connect to an enthusiastic and active community - leaving behind old Ion code that inherits from less actively developed and maintaned code. Our main sources are now derived from:
+By doing so, we connect to an enthusiastic and active community - leaving behind old Ion code that inherits from less actively developed and maintained code. Our main sources are now derived from:
 
 pivx | dash | bitcoin
 :-: | :--: | :-: |
@@ -115,7 +114,7 @@ _get support/chat with us or send your request per [Email](mail:support@ionomy.c
   - [API Call list](../../wiki/API-Calls-List)
   - [API-Reference-JSON-RPC](../../wiki/API-Reference-JSON-RPC)
   - [Data-Directory](../../wiki/Data-Directory)
-- External ressources
+- External resources
   - [Ionomy.com](https://ionomy.com)
     - [Telegram](https://t.me/ionomy)
     - [Twitter](https://twitter.com/ionomics)
