@@ -200,4 +200,4 @@ Currently there are issues with the 4.x gitian release on MacOS version 10.13 (H
 ### 5.0.99 Change log
 ckti <ckti@i2pmail.org> (1):
 
-- `commit to be added` CircleCI is now being used for continuous integration
+- `3ad7b4d` CircleCI is now being used for continuous integration
