@@ -413,18 +413,21 @@ LIBUNIVALUE_MINOR_VERSION=libunivalue_minor_version
 LIBUNIVALUE_MICRO_VERSION=libunivalue_micro_version
 LIBUNIVALUE_INTERFACE_AGE=libunivalue_interface_age
 
-# ABI version
-# http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
-LIBUNIVALUE_CURRENT=libunivalue_current
-LIBUNIVALUE_REVISION=libunivalue_revision
-LIBUNIVALUE_AGE=libunivalue_age
+AC_ARG_WITH([utils],
+  [AS_HELP_STRING([--with-utils],
+  [build ion-cli ion-tx (default=yes)])],
+  [build_bitcoin_utils=$withval],
+  [build_bitcoin_utils=yes])
 
 AC_SUBST(LIBUNIVALUE_CURRENT)
 AC_SUBST(LIBUNIVALUE_REVISION)
 AC_SUBST(LIBUNIVALUE_AGE)
 
-LT_INIT
-LT_LANG([C++])
+AC_ARG_WITH([daemon],
+  [AS_HELP_STRING([--with-daemon],
+  [build iond daemon (default=yes)])],
+  [build_bitcoind=$withval],
+  [build_bitcoind=yes])
 
 case $host in
   *mingw*)
@@ -1583,3 +1586,52 @@ AC_CONFIG_SUBDIRS([src/secp256k1])
 
 AC_OUTPUT
 
+dnl Taken from https://wiki.debian.org/RpathIssue
+case $host in
+   *-*-linux-gnu)
+     AC_MSG_RESULT([Fixing libtool for -rpath problems.])
+     sed < libtool > libtool-2 \
+     's/^hardcode_libdir_flag_spec.*$'/'hardcode_libdir_flag_spec=" -D__LIBTOOL_IS_A_FOOL__ "/'
+     mv libtool-2 libtool
+     chmod 755 libtool
+   ;;
+esac
+
+dnl Replace the BUILDDIR path with the correct Windows path if compiling on Native Windows
+case ${OS} in
+   *Windows*)
+     sed  's/BUILDDIR="\/\([[a-z]]\)/BUILDDIR="\1:/'  test/config.ini > test/config-2.ini
+     mv test/config-2.ini test/config.ini
+   ;;
+esac
+
+echo 
+echo "Options used to compile and link:"
+echo "  with wallet         = $enable_wallet"
+echo "  with gui / qt       = $bitcoin_enable_qt"
+if test x$bitcoin_enable_qt != xno; then
+    echo "    qt version        = $bitcoin_qt_got_major_vers"
+    echo "    with qr           = $use_qr"
+fi
+echo "  with zmq            = $use_zmq"
+echo "  with bignum         = $set_bignum"
+echo "  with test           = $use_tests"
+echo "  with bench          = $use_bench"
+echo "  with upnp           = $use_upnp"
+echo "  use asm             = $use_asm"
+echo "  debug enabled       = $enable_debug"
+echo "  crash hooks enabled = $enable_crashhooks"
+echo "  miner enabled       = $enable_miner"
+echo "  werror              = $enable_werror"
+echo 
+echo "  target os           = $TARGET_OS"
+echo "  build os            = $BUILD_OS"
+echo
+echo "  CC                  = $CC"
+echo "  CFLAGS              = $CFLAGS"
+echo "  CPPFLAGS            = $CPPFLAGS"
+echo "  CXX                 = $CXX"
+echo "  CXXFLAGS            = $CXXFLAGS"
+echo "  LDFLAGS             = $LDFLAGS"
+echo "  ARFLAGS             = $ARFLAGS"
+echo 

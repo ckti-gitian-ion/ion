@@ -1430,7 +1430,7 @@ void CWallet::SyncTransaction(const CTransactionRef& ptx, const CBlockIndex *pin
     fAnonymizableTallyCachedNonDenom = false;
 }
 
-void CWallet::TransactionAddedToMempool(const CTransactionRef& ptx) {
+void CWallet::TransactionAddedToMempool(const CTransactionRef& ptx, int64_t nAcceptTime) {
     LOCK2(cs_main, cs_wallet);
     SyncTransaction(ptx);
 }
@@ -3971,6 +3971,10 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletT
 
     wtxNew.fTimeReceivedIsTxTime = true;
     wtxNew.BindWallet(this);
+    if (coin_control.nCoinType == CoinType::ONLY_DENOMINATED) {
+        wtxNew.mapValue["DS"] = "1";
+    }
+
     CMutableTransaction txNew;
 
     // Discourage fee sniping.
@@ -4121,7 +4125,6 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletT
                     if (coin_control.nCoinType == CoinType::ONLY_DENOMINATED) {
                         nChangePosInOut = -1;
                         nFeeRet += nChange;
-                        wtxNew.mapValue["DS"] = "1";
                     } else {
                         // Fill a vout to ourself
                         newTxOut = CTxOut(nChange, scriptChange);

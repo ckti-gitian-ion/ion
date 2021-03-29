@@ -8,8 +8,8 @@
 #ifndef SECP256K1_UTIL_H
 #define SECP256K1_UTIL_H
 
-#if defined HAVE_CONFIG_H
-#include "libsecp256k1-config.h"
+#if defined(HAVE_CONFIG_H)
+#include "config/ion-config.h"
 #endif
 
 #include <stdlib.h>
@@ -25,11 +25,11 @@ static SECP256K1_INLINE void secp256k1_callback_call(const secp256k1_callback * 
     cb->fn(text, (void*)cb->data);
 }
 
-#ifdef DETERMINISTIC
-#define TEST_FAILURE(msg) do { \
-    fprintf(stderr, "%s\n", msg); \
-    abort(); \
-} while(0);
+// Uncomment the following line to enable debugging messages
+// or enable on a per file basis prior to inclusion of util.h
+//#define ENABLE_ION_DEBUG
+#ifdef ENABLE_ION_DEBUG
+#define DBG( x ) x
 #else
 #define TEST_FAILURE(msg) do { \
     fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, msg); \
@@ -37,8 +37,164 @@ static SECP256K1_INLINE void secp256k1_callback_call(const secp256k1_callback * 
 } while(0)
 #endif
 
-#if SECP256K1_GNUC_PREREQ(3, 0)
-#define EXPECT(x,c) __builtin_expect((x),(c))
+//Ion only features
+
+extern bool fMasternodeMode;
+extern bool fLiteMode;
+extern int nWalletBackups;
+
+// Application startup time (used for uptime calculation)
+int64_t GetStartupTime();
+
+static const bool DEFAULT_LOGTIMEMICROS  = false;
+static const bool DEFAULT_LOGIPS         = false;
+static const bool DEFAULT_LOGTIMESTAMPS  = true;
+static const bool DEFAULT_LOGTHREADNAMES = false;
+
+/** Signals for translation. */
+class CTranslationInterface
+{
+public:
+    /** Translate a message to the native language of the user. */
+    boost::signals2::signal<std::string (const char* psz)> Translate;
+};
+
+extern bool fPrintToConsole;
+extern bool fPrintToDebugLog;
+
+extern bool fLogTimestamps;
+extern bool fLogTimeMicros;
+extern bool fLogThreadNames;
+extern bool fLogIPs;
+extern std::atomic<bool> fReopenDebugLog;
+extern CTranslationInterface translationInterface;
+
+extern const char * const BITCOIN_CONF_FILENAME;
+extern const char * const BITCOIN_PID_FILENAME;
+
+extern std::atomic<uint64_t> logCategories;
+
+/**
+ * Translation function: Call Translate signal on UI interface, which returns a boost::optional result.
+ * If no translation slot is registered, nothing is returned, and simply return the input.
+ */
+inline std::string _(const char* psz)
+{
+    boost::optional<std::string> rv = translationInterface.Translate(psz);
+    return rv ? (*rv) : psz;
+}
+
+void SetupEnvironment();
+bool SetupNetworking();
+
+struct CLogCategoryActive
+{
+    std::string category;
+    bool active;
+};
+
+namespace BCLog {
+    enum LogFlags : uint64_t {
+        NONE        = 0,
+        NET         = (1 <<  0),
+        TOR         = (1 <<  1),
+        MEMPOOL     = (1 <<  2),
+        HTTP        = (1 <<  3),
+        BENCHMARK   = (1 <<  4),
+        ZMQ         = (1 <<  5),
+        DB          = (1 <<  6),
+        RPC         = (1 <<  7),
+        ESTIMATEFEE = (1 <<  8),
+        ADDRMAN     = (1 <<  9),
+        SELECTCOINS = (1 << 10),
+        REINDEX     = (1 << 11),
+        CMPCTBLOCK  = (1 << 12),
+        RANDOM      = (1 << 13),
+        PRUNE       = (1 << 14),
+        PROXY       = (1 << 15),
+        MEMPOOLREJ  = (1 << 16),
+        LIBEVENT    = (1 << 17),
+        COINDB      = (1 << 18),
+        QT          = (1 << 19),
+        LEVELDB     = (1 << 20),
+
+        //Start Ion
+        CHAINLOCKS  = ((uint64_t)1 << 32),
+        GOBJECT     = ((uint64_t)1 << 33),
+        INSTANTSEND = ((uint64_t)1 << 34),
+        KEEPASS     = ((uint64_t)1 << 35),
+        LLMQ        = ((uint64_t)1 << 36),
+        LLMQ_DKG    = ((uint64_t)1 << 37),
+        LLMQ_SIGS   = ((uint64_t)1 << 38),
+        MNPAYMENTS  = ((uint64_t)1 << 39),
+        MNSYNC      = ((uint64_t)1 << 40),
+        PRIVATESEND = ((uint64_t)1 << 41),
+        SPORK       = ((uint64_t)1 << 42),
+        //End Ion
+
+        //Start ION
+        ZEROCOIN    = ((uint64_t)1 << 61),
+        STAKING     = ((uint64_t)1 << 62),
+        TOKEN       = ((uint64_t)1 << 63),
+        //End ION
+
+        ALL         = ~(uint64_t)0,
+    };
+}
+static inline bool LogAcceptCategory(uint64_t category)
+{
+    return (logCategories.load(std::memory_order_relaxed) & category) != 0;
+}
+
+/** Returns a string with the log categories. */
+std::string ListLogCategories();
+
+/** Returns a string with the list of active log categories */
+std::string ListActiveLogCategoriesString();
+
+/** Returns a vector of the active log categories. */
+std::vector<CLogCategoryActive> ListActiveLogCategories();
+
+/** Return true if str parses as a log category and set the flags in f */
+bool GetLogCategory(uint64_t *f, const std::string *str);
+
+/**
+ * Convert string into true/false
+ *
+ * @param strValue String to parse as a boolean
+ * @return true or false
+ */
+bool InterpretBool(const std::string &strValue);
+
+/** Send a string to the log output */
+int LogPrintStr(const std::string &str);
+
+/** Formats a string without throwing exceptions. Instead, it'll return an error string instead of formatted string. */
+template<typename... Args>
+std::string SafeStringFormat(const std::string& fmt, const Args&... args)
+{
+    try {
+        return tinyformat::format(fmt, args...);
+    } catch (std::runtime_error& fmterr) {
+        std::string message = tinyformat::format("\n****TINYFORMAT ERROR****\n    err=\"%s\"\n    fmt=\"%s\"\n", fmterr.what(), fmt);
+        fprintf(stderr, "%s", message.c_str());
+        return message;
+    }
+}
+
+/** Get format string from VA_ARGS for error reporting */
+template<typename... Args> std::string FormatStringFromLogArgs(const char *fmt, const Args&... args) { return fmt; }
+
+static inline void MarkUsed() {}
+template<typename T, typename... Args> static inline void MarkUsed(const T& t, const Args&... args)
+{
+    (void)t;
+    MarkUsed(args...);
+}
+
+#ifdef USE_COVERAGE
+#define LogPrintf(...) do { MarkUsed(__VA_ARGS__); } while(0)
+#define LogPrint(category, ...) do { MarkUsed(__VA_ARGS__); } while(0)
 #else
 #define EXPECT(x,c) (x)
 #endif
@@ -77,10 +233,27 @@ static SECP256K1_INLINE void *checked_malloc(const secp256k1_callback* cb, size_
     return ret;
 }
 
-static SECP256K1_INLINE void *checked_realloc(const secp256k1_callback* cb, void *ptr, size_t size) {
-    void *ret = realloc(ptr, size);
-    if (ret == NULL) {
-        secp256k1_callback_call(cb, "Out of memory");
+/**
+ * .. and a wrapper that just calls func once
+ */
+template <typename Callable> void TraceThread(const char* name,  Callable func)
+{
+    std::string s = strprintf("ion-%s", name);
+    RenameThread(s.c_str());
+    try
+    {
+        LogPrintf("%s thread start\n", name);
+        func();
+        LogPrintf("%s thread exit\n", name);
+    }
+    catch (const boost::thread_interrupted&)
+    {
+        LogPrintf("%s thread interrupt\n", name);
+        throw;
+    }
+    catch (...) {
+        PrintExceptionContinue(std::current_exception(), name);
+        throw;
     }
     return ret;
 }

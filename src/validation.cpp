@@ -831,7 +831,7 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
     }
 
     if(!fDryRun)
-        GetMainSignals().TransactionAddedToMempool(ptx);
+        GetMainSignals().TransactionAddedToMempool(ptx, nAcceptTime);
 
     return true;
 }

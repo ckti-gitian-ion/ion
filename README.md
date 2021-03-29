@@ -7,37 +7,29 @@ Ion Core integration/staging repository
  :-: | :-: | :-: |
 [![Latest release](https://img.shields.io/github/release/ioncoincore/ion.svg)](https://bitbucket.org/ioncoin/ion/releases/latest) ![Release date](https://img.shields.io/github/release-date/ioncoincore/ion.svg) | [![Twitter](https://img.shields.io/twitter/url/https/bitbucket.org/ioncoin/ion.svg?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fioncoincore%2Fion)  | [![](https://img.shields.io/website/https/ionomy.com.svg?down_color=darkred&down_message=ionomy.com%20is%20offline&style=for-the-badge&up_color=green&up_message=ionomy.com%20is%20online)](https://ionomy.com)
 
-Features:
-* Simple, pure C code without any dependencies.
-* No tables or data-dependent branches whatsoever, but using bit sliced approach from https://eprint.iacr.org/2009/129.pdf.
-* Very small object code: slightly over 4k of executable code when compiled with -Os.
-* Slower than implementations based on precomputed tables or specialized instructions, but can do ~15 MB/s on modern CPUs.
+_If you want to encrypt your email/files, please use public pgp key provided below._
+![Keybase PGP](https://img.shields.io/keybase/pgp/ioncoincore.svg?style=flat)
 
-Performance
------------
+## Installation methods
 
-Compiled with GCC 5.3.1 with -O3, on an Intel(R) Core(TM) i7-4800MQ CPU, numbers in CPU cycles:
+  We offer different installation and distribution methods covering most user needs.
+  Below you can see
 
-| Algorithm | Key schedule | Encryption per byte | Decryption per byte |
-| --------- | ------------:| -------------------:| -------------------:|
-| AES-128   |         2.8k |                 154 |                 161 |
-| AES-192   |         3.1k |                 169 |                 181 |
-| AES-256   |         4.0k |                 191 |                 203 |
+#### Install via SNAP (_preffered method for linux users_)
 
-Build steps
------------
+_For full information about usage and possible installation methods and Branches, please check out [Ioncore Snap Builds](snap/README.md#ioncore-snap-builds)_
 
-Object code:
+    sudo snap install ioncore
 
-    $ gcc -O3 ctaes.c -c -o ctaes.o
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/ioncore)
 
-Tests:
+#### Download and install latest stable release binaries (_preffered method for windows and mac os users_)
 
 [![Latest release](https://img.shields.io/github/release/ioncoincore/ion.svg)](https://bitbucket.org/ioncoin/ion/releases/latest) ![Latest stable Release](https://img.shields.io/github/downloads/ioncoincore/ion/latest/total.svg?style=social)
 
-Benchmark:
+_For full information about usage and possible installation methods and Branches, please check out [Build and install ion (all OS)](../../tree/master/doc)_
 
-    $ gcc -O3 ctaes.c bench.c -o bench
+#### Build, compile and install from source (_for advanced users_)
 
 - [Build, compile and install documentation](../../tree/master/doc#building)
 
