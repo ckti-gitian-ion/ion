@@ -118,7 +118,7 @@ jobs:
             make install
             cd ../..
             ./autogen.sh
-            ./configure --host=${HOST} --prefix=/ --enable-zmq --with-incompatible-bdb --with-gui=qt5 CPPFLAGS=-DDEBUG_LOCKORDER --disable-hardening --disable-asm
+            ./configure --host=${HOST} --prefix=/ --enable-zmq --with-incompatible-bdb --with-gui=qt5 CPPFLAGS=-DDEBUG_LOCKORDER --disable-hardening --disable-asm --disable-tests
             make -j${JOBS}
   arm32_bionic:
     docker:
